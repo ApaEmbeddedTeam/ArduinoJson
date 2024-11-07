@@ -71,29 +71,13 @@ struct StringAdapter<TChar*, enable_if_t<IsChar<TChar>::value>> {
 };
 
 template <typename TChar, size_t N>
-struct StringAdapter<TChar[N], enable_if_t<IsChar<TChar>::value>> {
+struct StringAdapter<
+    TChar[N],
+    enable_if_t<IsChar<TChar>::value && !is_same<const char, TChar>::value>> {
   using AdaptedString = ZeroTerminatedRamString;
 
   static AdaptedString adapt(const TChar* p) {
     return AdaptedString(reinterpret_cast<const char*>(p));
-  }
-};
-
-class StaticStringAdapter : public ZeroTerminatedRamString {
- public:
-  StaticStringAdapter(const char* str) : ZeroTerminatedRamString(str) {}
-
-  bool isLinked() const {
-    return true;
-  }
-};
-
-template <>
-struct StringAdapter<const char*, void> {
-  using AdaptedString = StaticStringAdapter;
-
-  static AdaptedString adapt(const char* p) {
-    return AdaptedString(p);
   }
 };
 

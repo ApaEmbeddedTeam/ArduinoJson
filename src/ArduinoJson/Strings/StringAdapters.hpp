@@ -7,7 +7,9 @@
 #include <ArduinoJson/Polyfills/type_traits.hpp>
 #include <ArduinoJson/Strings/Adapters/JsonString.hpp>
 #include <ArduinoJson/Strings/Adapters/RamString.hpp>
+#include <ArduinoJson/Strings/Adapters/StringLiteral.hpp>
 #include <ArduinoJson/Strings/Adapters/StringObject.hpp>
+
 
 #if ARDUINOJSON_ENABLE_PROGMEM
 #  include <ArduinoJson/Strings/Adapters/FlashString.hpp>
