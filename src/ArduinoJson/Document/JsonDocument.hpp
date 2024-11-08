@@ -138,13 +138,14 @@ class JsonDocument : public detail::VariantOperators<const JsonDocument&> {
   // https://arduinojson.org/v7/api/jsondocument/set/
   template <typename T>
   detail::enable_if_t<!detail::is_base_of<JsonDocument, T>::value, bool> set(
-      const T& src) {
-    return to<JsonVariant>().set(src);
+      T&& src) {
+    return to<JsonVariant>().set(detail::forward<T>(src));
   }
 
   // Replaces the root with the specified value.
   // https://arduinojson.org/v7/api/jsondocument/set/
-  template <typename TChar>
+  template <typename TChar,
+            typename = detail::enable_if_t<!detail::is_const<TChar>::value>>
   bool set(TChar* src) {
     return to<JsonVariant>().set(src);
   }
@@ -265,13 +266,14 @@ class JsonDocument : public detail::VariantOperators<const JsonDocument&> {
   // Appends a value to the root array.
   // https://arduinojson.org/v7/api/jsondocument/add/
   template <typename TValue>
-  bool add(const TValue& value) {
-    return data_.addValue(value, &resources_);
+  bool add(TValue&& value) {
+    return data_.addValue(detail::forward<TValue>(value), &resources_);
   }
 
   // Appends a value to the root array.
   // https://arduinojson.org/v7/api/jsondocument/add/
-  template <typename TChar>
+  template <typename TChar,
+            typename = detail::enable_if_t<!detail::is_const<TChar>::value>>
   bool add(TChar* value) {
     return data_.addValue(value, &resources_);
   }

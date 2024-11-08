@@ -47,7 +47,7 @@ class StringLiteral {
 };
 
 template <size_t N>
-struct StringAdapter<const char[N]> {
+struct StringAdapter<const char (&)[N]> {
   using AdaptedString = StringLiteral<N>;
 
   static AdaptedString adapt(const char (&p)[N]) {

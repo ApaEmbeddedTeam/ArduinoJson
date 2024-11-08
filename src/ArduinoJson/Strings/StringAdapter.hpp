@@ -4,7 +4,16 @@
 
 #pragma once
 
+#include <ArduinoJson/Polyfills/utility.hpp>
+
 ARDUINOJSON_BEGIN_PRIVATE_NAMESPACE
+
+// a meta function that tells if the type is a string literal (const char[N])
+template <typename T>
+struct IsStringLiteral : false_type {};
+
+template <size_t N>
+struct IsStringLiteral<const char (&)[N]> : true_type {};
 
 template <typename TString, typename Enable = void>
 struct StringAdapter;
@@ -13,11 +22,17 @@ template <typename TString, typename Enable = void>
 struct SizedStringAdapter;
 
 template <typename TString>
-typename StringAdapter<TString>::AdaptedString adaptString(const TString& s) {
-  return StringAdapter<TString>::adapt(s);
+using AdapterParam = conditional_t<IsStringLiteral<TString>::value, TString,
+                                   remove_cv_t<remove_reference_t<TString>>>;
+
+template <typename TString>
+typename StringAdapter<AdapterParam<TString>>::AdaptedString adaptString(
+    TString&& s) {
+  return StringAdapter<AdapterParam<TString>>::adapt(
+      detail::forward<TString>(s));
 }
 
-template <typename TChar>
+template <typename TChar, typename = enable_if_t<!is_const<TChar>::value>>
 typename StringAdapter<TChar*>::AdaptedString adaptString(TChar* p) {
   return StringAdapter<TChar*>::adapt(p);
 }

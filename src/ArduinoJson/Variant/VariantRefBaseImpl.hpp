@@ -139,7 +139,7 @@ VariantRefBase<TDerived>::operator[](const TString& key) const {
 template <typename TDerived>
 template <typename TConverter, typename T>
 inline bool VariantRefBase<TDerived>::doSet(T&& value, false_type) const {
-  TConverter::toJson(value, getOrCreateVariant());
+  TConverter::toJson(detail::forward<T>(value), getOrCreateVariant());
   auto resources = getResourceManager();
   return resources && !resources->overflowed();
 }

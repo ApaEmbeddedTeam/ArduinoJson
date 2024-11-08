@@ -14,56 +14,74 @@
 
 using namespace ArduinoJson::detail;
 
-TEST_CASE("ZeroTerminatedRamString") {
-  SECTION("null") {
-    ZeroTerminatedRamString s = adaptString(static_cast<const char*>(0));
+TEST_CASE("String literal") {
+  auto s = adaptString("bravo");
 
-    CHECK(s.isNull() == true);
-    CHECK(s.size() == 0);
-  }
-
-  SECTION("non-null") {
-    ZeroTerminatedRamString s = adaptString("bravo");
-
-    CHECK(s.isNull() == false);
-    CHECK(s.size() == 5);
-  }
+  CHECK(s.isNull() == false);
+  CHECK(s.size() == 5);
+  CHECK(s.isLinked() == true);
 }
 
-TEST_CASE("SizedRamString") {
-  SECTION("null") {
-    SizedRamString s = adaptString(static_cast<const char*>(0), 10);
+TEST_CASE("null const char*") {
+  auto s = adaptString(static_cast<const char*>(0));
 
-    CHECK(s.isNull() == true);
-  }
-
-  SECTION("non-null") {
-    SizedRamString s = adaptString("bravo", 5);
-
-    CHECK(s.isNull() == false);
-    CHECK(s.size() == 5);
-  }
+  CHECK(s.isNull() == true);
+  CHECK(s.size() == 0);
+  CHECK(s.isLinked() == false);
 }
 
-TEST_CASE("FlashString") {
-  SECTION("null") {
-    FlashString s = adaptString(static_cast<const __FlashStringHelper*>(0));
+TEST_CASE("const char*") {
+  const char* p = "bravo";
+  ZeroTerminatedRamString s = adaptString(p);
 
-    CHECK(s.isNull() == true);
-    CHECK(s.size() == 0);
-  }
+  CHECK(s.isNull() == false);
+  CHECK(s.size() == 5);
+  CHECK(s.isLinked() == false);
+}
 
-  SECTION("non-null") {
-    FlashString s = adaptString(F("bravo"));
+TEST_CASE("char[]") {
+  char p[] = "bravo";
+  ZeroTerminatedRamString s = adaptString(p);
 
-    CHECK(s.isNull() == false);
-    CHECK(s.size() == 5);
-  }
+  CHECK(s.isNull() == false);
+  CHECK(s.size() == 5);
+  CHECK(s.isLinked() == false);
+}
+
+TEST_CASE("null const char* + size") {
+  auto s = adaptString(static_cast<const char*>(0), 10);
+
+  CHECK(s.isNull() == true);
+  CHECK(s.isLinked() == false);
+}
+
+TEST_CASE("const char* + size") {
+  auto s = adaptString("bravo", 5);
+
+  CHECK(s.isNull() == false);
+  CHECK(s.size() == 5);
+  CHECK(s.isLinked() == false);
+}
+
+TEST_CASE("null Flash string") {
+  auto s = adaptString(static_cast<const __FlashStringHelper*>(0));
+
+  CHECK(s.isNull() == true);
+  CHECK(s.size() == 0);
+  CHECK(s.isLinked() == false);
+}
+
+TEST_CASE("Flash string") {
+  FlashString s = adaptString(F("bravo"));
+
+  CHECK(s.isNull() == false);
+  CHECK(s.size() == 5);
+  CHECK(s.isLinked() == false);
 }
 
 TEST_CASE("std::string") {
   std::string orig("bravo");
-  SizedRamString s = adaptString(orig);
+  auto s = adaptString(orig);
 
   CHECK(s.isNull() == false);
   CHECK(s.size() == 5);
@@ -71,7 +89,7 @@ TEST_CASE("std::string") {
 
 TEST_CASE("Arduino String") {
   ::String orig("bravo");
-  SizedRamString s = adaptString(orig);
+  auto s = adaptString(orig);
 
   CHECK(s.isNull() == false);
   CHECK(s.size() == 5);
@@ -79,7 +97,7 @@ TEST_CASE("Arduino String") {
 
 TEST_CASE("custom_string") {
   custom_string orig("bravo");
-  SizedRamString s = adaptString(orig);
+  auto s = adaptString(orig);
 
   CHECK(s.isNull() == false);
   CHECK(s.size() == 5);
@@ -88,15 +106,23 @@ TEST_CASE("custom_string") {
 struct EmptyStruct {};
 
 TEST_CASE("IsString<T>") {
+  char charArray[8];
+
   CHECK(IsString<std::string>::value == true);
   CHECK(IsString<std::basic_string<wchar_t>>::value == false);
   CHECK(IsString<custom_string>::value == true);
   CHECK(IsString<const __FlashStringHelper*>::value == true);
   CHECK(IsString<const char*>::value == true);
-  CHECK(IsString<const char[8]>::value == true);
+  CHECK(IsString<decltype(charArray)>::value == true);
   CHECK(IsString<::String>::value == true);
   CHECK(IsString<::StringSumHelper>::value == true);
   CHECK(IsString<const EmptyStruct*>::value == false);
+}
+
+TEST_CASE("IsStringLiteral") {
+  CHECK(IsStringLiteral<const char*>::value == false);
+  CHECK(IsStringLiteral<decltype("toto")>::value == true);
+  CHECK(IsStringLiteral<char[8]>::value == false);
 }
 
 TEST_CASE("stringCompare") {

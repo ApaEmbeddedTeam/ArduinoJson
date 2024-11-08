@@ -76,13 +76,16 @@ class VariantRefBase : public VariantTag {
   // Copies the specified value.
   // https://arduinojson.org/v7/api/jsonvariant/set/
   template <typename T>
-  bool set(const T& value) const {
-    return doSet<Converter<remove_cv_t<T>>>(value);
+  bool set(T&& value) const {
+    using TypeForConverter = conditional_t<IsStringLiteral<T>::value, T,
+                                           remove_cv_t<remove_reference_t<T>>>;
+    return doSet<Converter<TypeForConverter>>(value);
   }
 
   // Copies the specified value.
   // https://arduinojson.org/v7/api/jsonvariant/set/
-  template <typename T>
+  template <typename T,
+            typename = detail::enable_if_t<!detail::is_const<T>::value>>
   bool set(T* value) const {
     return doSet<Converter<T*>>(value);
   }
