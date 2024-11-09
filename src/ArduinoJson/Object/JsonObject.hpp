@@ -104,14 +104,15 @@ class JsonObject : public detail::VariantOperators<JsonObject> {
   template <typename TString>
   detail::enable_if_t<detail::IsString<TString>::value,
                       detail::MemberProxy<JsonObject, TString>>
-  operator[](const TString& key) const {
-    return {*this, key};
+  operator[](TString&& key) const {
+    return {*this, detail::forward<TString>(key)};
   }
 
   // Gets or sets the member with specified key.
   // https://arduinojson.org/v7/api/jsonobject/subscript/
   template <typename TChar>
-  detail::enable_if_t<detail::IsString<TChar*>::value,
+  detail::enable_if_t<detail::IsString<TChar*>::value &&
+                          !detail::is_const<TChar>::value,
                       detail::MemberProxy<JsonObject, TChar*>>
   operator[](TChar* key) const {
     return {*this, key};

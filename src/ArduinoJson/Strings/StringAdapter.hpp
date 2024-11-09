@@ -22,14 +22,13 @@ template <typename TString, typename Enable = void>
 struct SizedStringAdapter;
 
 template <typename TString>
-using AdapterParam = conditional_t<IsStringLiteral<TString>::value, TString,
-                                   remove_cv_t<remove_reference_t<TString>>>;
+using StringAdapterFor =
+    StringAdapter<conditional_t<IsStringLiteral<TString>::value, TString,
+                                remove_cv_t<remove_reference_t<TString>>>>;
 
 template <typename TString>
-typename StringAdapter<AdapterParam<TString>>::AdaptedString adaptString(
-    TString&& s) {
-  return StringAdapter<AdapterParam<TString>>::adapt(
-      detail::forward<TString>(s));
+typename StringAdapterFor<TString>::AdaptedString adaptString(TString&& s) {
+  return StringAdapterFor<TString>::adapt(detail::forward<TString>(s));
 }
 
 template <typename TChar, typename = enable_if_t<!is_const<TChar>::value>>
